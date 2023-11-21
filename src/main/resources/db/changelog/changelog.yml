@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: Dev - 1
+      author: spatium
+      preConditions:
+        - onFail: MARK_RAN
+          not:
+            - tableExists:
+                tableName: user
+      changes:
+        - createTable:
+            tableName: user
+            columns:
+              - column:
+                  name: id
+                  type: integer
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: username
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: password
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: confirmPassword
+                  type: varchar(255)
+                  constraints:
+                    nullable: false

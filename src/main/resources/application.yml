@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/users_db
+    username: postgres
+    password: spatiumerror88
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  liquibase:
+    change-log: classpath:db/changelog/changelog.yml
+jwt:
+  secret: 9bcbd500c8070e822ccd0f8c3b9a9447556ac9734634a5659bcb82e71f65bf0e
+  tokenTtl: 600
