@@ -9,10 +9,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import ru.headsandhands.userservice.Repository.RepositoryToken;
 import ru.headsandhands.userservice.Service.Impl.ServiceJWTImpl;
 
 import java.io.IOException;
@@ -22,13 +22,12 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
     private final ServiceJWTImpl serviceJWT;
     private final UserDetailsService userDetailsService;
-    public JWTAuthenticationFilter(ServiceJWTImpl serviceJWT, UserDetailsService userDetailsService){
+    private final RepositoryToken repositoryToken;
+    public JWTAuthenticationFilter(ServiceJWTImpl serviceJWT, UserDetailsService userDetailsService, RepositoryToken repositoryToken){
         this.serviceJWT = serviceJWT;
         this.userDetailsService = userDetailsService;
+        this.repositoryToken = repositoryToken;
     }
-
-
-
 
     @Override
     protected void doFilterInternal(
@@ -47,7 +46,10 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         userName = serviceJWT.extractUserName(JWT);
         if(userName != null && SecurityContextHolder.getContext().getAuthentication() == null){
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userName);
-            if(serviceJWT.isTokenValid(JWT, userDetails)){
+            var isTokenValid = repositoryToken.findByToken(JWT)
+                    .map(t -> !t.isExpired() && !t.isRevoked())
+                    .orElse(false);
+            if(serviceJWT.isTokenValid(JWT, userDetails) && isTokenValid){
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,

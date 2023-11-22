@@ -9,7 +9,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.headsandhands.userservice.Model.Role;
+import ru.headsandhands.userservice.Model.Token;
+import ru.headsandhands.userservice.Model.TokenType;
 import ru.headsandhands.userservice.Model.User;
+import ru.headsandhands.userservice.Repository.RepositoryToken;
 import ru.headsandhands.userservice.Repository.RepositoryUser;
 import ru.headsandhands.userservice.Request.AuthenticationRequest;
 import ru.headsandhands.userservice.Request.RequestRegister;
@@ -24,15 +27,39 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final ServiceJWTImpl serviceJWT;
 
+    private final RepositoryToken repositoryToken;
+
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationService(RepositoryUser repositoryUser, PasswordEncoder passwordEncoder, ServiceJWTImpl serviceJWT, AuthenticationManager authenticationManager) {
+    public AuthenticationService(RepositoryUser repositoryUser, PasswordEncoder passwordEncoder, ServiceJWTImpl serviceJWT, RepositoryToken repositoryToken, AuthenticationManager authenticationManager) {
         this.repositoryUser = repositoryUser;
         this.passwordEncoder = passwordEncoder;
         this.serviceJWT = serviceJWT;
+        this.repositoryToken = repositoryToken;
         this.authenticationManager = authenticationManager;
     }
 
+    private void saveUserToken(User user, String jwtToken) {
+        var token = Token.builder()
+                .user(user)
+                .token(jwtToken)
+                .typeToken(TokenType.BEARER)
+                .expired(false)
+                .revoked(false)
+                .build();
+        repositoryToken.save(token);
+    }
+
+    private void revokeAllUserTokens(User user) {
+        var validUserTokens = repositoryToken.findAllValidTokensByUser(Math.toIntExact(user.getId()));
+        if (validUserTokens.isEmpty())
+            return;
+        validUserTokens.forEach(token -> {
+            token.setExpired(true);
+            token.setRevoked(true);
+        });
+        repositoryToken.saveAll(validUserTokens);
+    }
 
     public AuthenticationResponse register(RequestRegister request) {
         var user = User.builder()
@@ -42,8 +69,10 @@ public class AuthenticationService {
                 .role(Role.USER)
                 .build();
         repositoryUser.save(user);
+        var savedUser = repositoryUser.save(user);
         var JwtToken = serviceJWT.generateToken(user);
         var refreshToken = serviceJWT.generateRefreshToken(user);
+        saveUserToken(savedUser, JwtToken);
         return AuthenticationResponse
                 .builder()
                 .accessToken(JwtToken)
@@ -62,6 +91,8 @@ public class AuthenticationService {
                 .orElseThrow();
         var JwtToken = serviceJWT.generateToken(user);
         var refreshToken = serviceJWT.generateRefreshToken(user);
+        revokeAllUserTokens(user);
+        saveUserToken(user, JwtToken);
         return AuthenticationResponse.builder()
                 .accessToken(JwtToken)
                 .refreshToken(refreshToken)
@@ -82,6 +113,8 @@ public class AuthenticationService {
             var userDetails = this.repositoryUser.findByUsername(userName).orElseThrow();
             if (serviceJWT.isTokenValid(refreshToken, userDetails)) {
                 var accessToken = serviceJWT.generateToken(userDetails);
+                revokeAllUserTokens(userDetails);
+                saveUserToken(userDetails, accessToken);
                 var authResponse = AuthenticationResponse.builder()
                         .accessToken(accessToken)
                         .refreshToken(refreshToken)
