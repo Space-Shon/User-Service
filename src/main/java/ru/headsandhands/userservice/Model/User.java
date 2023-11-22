@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "user")
+@Table(name = "users")
 public class User implements UserDetails {
 
 
@@ -32,9 +32,9 @@ public class User implements UserDetails {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "confirmPassword")
+    /*@Column(name = "confirmPassword")
     private String confirmPassword;
-
+*/
     @Enumerated(EnumType.STRING)
     private Role role;
 

@@ -1,10 +1,16 @@
 package ru.headsandhands.userservice.Request;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-public class RequestUser {
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class RequestRegister {
 
     @NotBlank
     private String name;
@@ -15,8 +21,8 @@ public class RequestUser {
     @NotBlank
     private String password;
 
-    @NotBlank
+    /*@NotBlank
     private String confirmPassword;
-
+*/
 
 }

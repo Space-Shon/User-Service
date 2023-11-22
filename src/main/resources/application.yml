@@ -10,6 +10,11 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   liquibase:
     change-log: classpath:db/changelog/changelog.yml
-jwt:
-  secret: 9bcbd500c8070e822ccd0f8c3b9a9447556ac9734634a5659bcb82e71f65bf0e
-  tokenTtl: 600
+
+application:
+  security:
+    jwt:
+      secret-key: 9bcbd500c8070e822ccd0f8c3b9a9447556ac9734634a5659bcb82e71f65bf0e
+      expiration: 86400000
+      refresh-token:
+        expiration: 604800000

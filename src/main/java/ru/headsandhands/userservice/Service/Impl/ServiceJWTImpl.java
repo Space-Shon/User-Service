@@ -19,9 +19,14 @@ import java.util.function.Function;
 @Service
 public class ServiceJWTImpl implements ServiceJWT {
 
-    @Value("${jwt.secret}")
-    private String secret;
+    @Value("${application.security.jwt.secret-key}")
+    private String secretKey;
 
+    @Value("${application.security.jwt.expiration}")
+    private Long jwtExpiration;
+
+    @Value("${application.security.jwt.refresh-token.expiration}")
+    private Long refreshExpiration;
 
      @Override
      public String extractUserName(String token){
@@ -41,12 +46,25 @@ public class ServiceJWTImpl implements ServiceJWT {
              Map<String, Object> extraClaims,
              UserDetails userDetails
      ){
+        return buildToken(extraClaims, userDetails, jwtExpiration);
+     }
+    public String generateRefreshToken(
+            UserDetails userDetails
+    ){
+        return buildToken(new HashMap<>(), userDetails, refreshExpiration);
+    }
+
+     public String buildToken(
+             Map<String, Object> extraClaims,
+             UserDetails userDetails,
+             Long expiration
+     ){
          return Jwts
                  .builder()
                  .setClaims(extraClaims)
                  .setSubject(userDetails.getUsername())
                  .setIssuedAt(new Date(System.currentTimeMillis()))
-                 .setExpiration(new Date(System.currentTimeMillis() + 30000 * 60 * 24))
+                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                  .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                  .compact();
      }
@@ -75,7 +93,7 @@ public class ServiceJWTImpl implements ServiceJWT {
     }
 
     private Key getSignInKey() {
-         byte[] keyBytes = Decoders.BASE64.decode(secret);
+         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
          return Keys.hmacShaKeyFor(keyBytes);
     }
 
