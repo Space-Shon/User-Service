@@ -1,8 +1,11 @@
 package ru.headsandhands.userservice.Service.Impl;
 
+import com.auth0.jwt.JWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,8 +20,11 @@ import ru.headsandhands.userservice.Repository.RepositoryUser;
 import ru.headsandhands.userservice.Request.AuthenticationRequest;
 import ru.headsandhands.userservice.Request.RequestRegister;
 import ru.headsandhands.userservice.Response.AuthenticationResponse;
+import ru.headsandhands.userservice.Thread.ThreadLocalPayload;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Base64;
 
 @Service
 public class AuthenticationService {

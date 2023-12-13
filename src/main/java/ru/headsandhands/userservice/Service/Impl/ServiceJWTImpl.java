@@ -8,12 +8,14 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import ru.headsandhands.userservice.Model.User;
 import ru.headsandhands.userservice.Service.ServiceJWT;
 
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Service
@@ -38,31 +40,33 @@ public class ServiceJWTImpl implements ServiceJWT {
          return claimsResolver.apply(claims);
      }
 
-     public String generateToken(UserDetails userDetails){
-         return generateToken(new HashMap<>(), userDetails);
+     public String generateToken(User user){
+         return generateToken(new HashMap<>(), user);
      }
 
      public String generateToken(
              Map<String, Object> extraClaims,
-             UserDetails userDetails
+             User user
      ){
-        return buildToken(extraClaims, userDetails, jwtExpiration);
+        return buildToken(extraClaims, user, jwtExpiration);
      }
     public String generateRefreshToken(
-            UserDetails userDetails
+            User user
     ){
-        return buildToken(new HashMap<>(), userDetails, refreshExpiration);
+        return buildToken(new HashMap<>(), user, refreshExpiration);
     }
 
      public String buildToken(
              Map<String, Object> extraClaims,
-             UserDetails userDetails,
+             User user,
              Long expiration
      ){
+
          return Jwts
                  .builder()
                  .setClaims(extraClaims)
-                 .setSubject(userDetails.getUsername())
+                 .setId(String.valueOf(user.getId()))
+                 .setSubject(user.getUsername())
                  .setIssuedAt(new Date(System.currentTimeMillis()))
                  .setExpiration(new Date(System.currentTimeMillis() + expiration))
                  .signWith(getSignInKey(), SignatureAlgorithm.HS256)
@@ -82,8 +86,11 @@ public class ServiceJWTImpl implements ServiceJWT {
          return extractClaim(token, Claims::getExpiration);
     }
 
+    public String extractId(String token){
+         return (extractClaim(token, Claims::getId));
+    }
 
-    private Claims extractAllClaims(String token){
+    public Claims extractAllClaims(String token){
          return Jwts
                  .parserBuilder()
                  .setSigningKey(getSignInKey())
@@ -92,7 +99,7 @@ public class ServiceJWTImpl implements ServiceJWT {
                  .getBody();
     }
 
-    private Key getSignInKey() {
+    public Key getSignInKey() {
          byte[] keyBytes = Decoders.BASE64.decode(secretKey);
          return Keys.hmacShaKeyFor(keyBytes);
     }

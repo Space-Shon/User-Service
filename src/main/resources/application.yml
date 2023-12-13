@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/users_db
-    username: postgres
-    password: spatiumerror88
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: admin
+    password: admin
 
   jpa:
     properties:
@@ -18,3 +18,6 @@ application:
       expiration: 86400000
       refresh-token:
         expiration: 604800000
+
+server:
+  port: 8082
