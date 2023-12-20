@@ -129,4 +129,12 @@ public class AuthenticationService {
             }
         }
     }
+
+    public void deleteUser(Integer id) {
+        Token token = repositoryToken.findById(Long.valueOf(id)).orElse(null);
+        if (token != null) {
+            repositoryToken.delete(token);
+        }
+        repositoryUser.deleteById(Long.valueOf(id));
+    }
 }

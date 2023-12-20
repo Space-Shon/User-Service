@@ -21,3 +21,7 @@ application:
 
 server:
   port: 8082
+
+
+kafka:
+  bootstrap-servers: localhost:29092

@@ -3,7 +3,9 @@ package ru.headsandhands.userservice.Controller;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 import ru.headsandhands.userservice.Request.AuthenticationRequest;
 import ru.headsandhands.userservice.Request.RequestRegister;
@@ -20,10 +22,12 @@ public class ControllerUser {
 
     private final AuthenticationService service;
     private final ServiceJWTImpl serviceJWT;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
-    public ControllerUser(AuthenticationService service, ServiceJWTImpl serviceJWT) {
+    public ControllerUser(AuthenticationService service, ServiceJWTImpl serviceJWT, KafkaTemplate<String, String> kafkaTemplate) {
         this.service = service;
         this.serviceJWT = serviceJWT;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
 
@@ -47,6 +51,13 @@ public class ControllerUser {
             HttpServletResponse response
     ) throws IOException {
         service.refreshToken(request, response);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public HttpStatus delete(@PathVariable Integer id) {
+        service.deleteUser(id);
+        kafkaTemplate.send("user-topic", "user deleted");
+        return HttpStatus.OK;
     }
 
     @GetMapping("/token")
