@@ -6,23 +6,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class RequestRegister {
 
-    @NotBlank
-    private String name;
+public record RequestRegister(
 
-    @NotBlank
-    private String username;
+        @NotBlank
+        String login,
 
-    @NotBlank
-    private String password;
-
-    /*@NotBlank
-    private String confirmPassword;
-*/
-
-}
+        @NotBlank
+        String password
+) { }

@@ -1,26 +1,26 @@
 spring:
+  config:
+    import: properties/app-properties.yaml
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres
-    username: admin
+    username: postgres
     password: admin
-
   jpa:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   liquibase:
-    change-log: classpath:db/changelog/changelog.yml
-
-application:
-  security:
-    jwt:
-      secret-key: 9bcbd500c8070e822ccd0f8c3b9a9447556ac9734634a5659bcb82e71f65bf0e
-      expiration: 86400000
-      refresh-token:
-        expiration: 604800000
+    change-log: classpath:db/changelog/changelog.sql
 
 server:
   port: 8082
+
+springdoc:
+  api-docs:
+    path: /support/swagger
+  swagger-ui:
+    path: /support/swagger-ui.html
+    disable-swagger-default-url: true
 
 
 kafka:
